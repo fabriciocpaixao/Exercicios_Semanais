@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treino & Foco - SPA</title>
+    <style>
+        /* =========================================
+           VARIÁVEIS DE COR E MODO ESCURO/CLARO
+           ========================================= */
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #9ca3af;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border-color: #e5e7eb;
+            --timer-bg: #eff6ff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --primary-color: #3b82f6;
+            --primary-hover: #60a5fa;
+            --border-color: #334155;
+            --timer-bg: #0f172a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        /* =========================================
+           ESTILOS GERAIS
+           ========================================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Cabeçalho e Controles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        select, .theme-toggle {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* =========================================
+           TEMPORIZADOR
+           ========================================= */
+        .timer-section {
+            background-color: var(--timer-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-variant-numeric: tabular-nums; /* Mantém os números com largura fixa */
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        /* =========================================
+           LISTA DE TAREFAS (EXERCÍCIOS)
+           ========================================= */
+        .todo-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .todo-section h2 {
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .todo-item.completed {
+            opacity: 0.5;
+            background-color: transparent;
+            border-style: dashed;
+        }
+
+        .todo-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Checkbox Customizado */
+        .checkbox-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-text {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .task-details {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-set-timer {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-set-timer:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 20px;
+            }
+            .time-display {
+                font-size: 3rem;
+            }
+            .todo-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-set-timer {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Cabeçalho e Controles Globais -->
+        <header>
+            <h1>Treino & Foco</h1>
+            <div class="header-controls">
+                <select id="daySelector" onchange="loadExercises()">
+                    <option value="Segunda-feira">Segunda-feira</option>
+                    <option value="Terça-feira">Terça-feira</option>
+                    <option value="Quarta-feira">Quarta-feira</option>
+                    <option value="Quinta-feira">Quinta-feira</option>
+                    <option value="Sexta-feira">Sexta-feira</option>
+                </select>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Alternar Modo Claro/Escuro">🌓</button>
+            </div>
+        </header>
+
+        <!-- Visor do Temporizador -->
+        <section class="timer-section">
+            <div class="time-display" id="timeDisplay">00:00</div>
+            <div class="timer-controls">
+                <button class="btn-primary" id="btnStart" onclick="startTimer()">Iniciar</button>
+                <button class="btn-secondary" id="btnPause" onclick="pauseTimer()">Pausar</button>
+                <button class="btn-secondary" id="btnReset" onclick="resetTimer()">Reiniciar</button>
+            </div>
+        </section>
+
+        <!-- Lista de Tarefas -->
+        <section class="todo-section">
+            <h2>Exercícios do Dia</h2>
+            <ul class="todo-list" id="todoList">
+                <!-- Os itens serão gerados via JavaScript -->
+            </ul>
+        </section>
+
+    </div>
+
+    <script>
+        /* =========================================
+           DADOS DA PLANILHA (Sincronizados com seu link)
+           ========================================= */
+        const exercisesData = [
+            // Segunda-feira (Peito / Tríceps)
+            { day: "Segunda-feira", title: "Supino Reto (Barra ou Halteres)", sets: "2", reps: "15", time: 60 },
+            { day: "Segunda-feira", title: "Supino Reto (Barra ou Halteres)", sets: "2", reps: "10", time: 60 },
+            { day: "Segunda-feira", title: "Supino Inclinado (Halteres)", sets: "2", reps: "15", time: 60 },
+            { day: "Segunda-feira", title: "Supino Inclinado (Halteres)", sets: "2", reps: "10", time: 60 },
+            { day: "Segunda-feira", title: "Crucifixo na Máquina (Peck Deck)", sets: "2", reps: "15", time: 60 },
+            { day: "Segunda-feira", title: "Crucifixo na Máquina (Peck Deck)", sets: "2", reps: "10", time: 60 },
+            { day: "Segunda-feira", title: "Tríceps Testa ou Francês", sets: "4", reps: "12", time: 60 },
+            { day: "Segunda-feira", title: "Tríceps Coice no Cabo", sets: "4", reps: "12", time: 60 },
+
+            // Terça-feira (Quadríceps / Ombros)
+            { day: "Terça-feira", title: "Agachamento (Livre ou Hack)", sets: "4", reps: "10", time: 60 },
+            { day: "Terça-feira", title: "Leg Press 45º (Pés baixos)", sets: "2", reps: "15", time: 60 },
+            { day: "Terça-feira", title: "Leg Press 45º (Pés baixos)", sets: "2", reps: "10", time: 60 },
+            { day: "Terça-feira", title: "Cadeira Extensora (Segura 1s no topo)", sets: "2", reps: "15", time: 60 },
+            { day: "Terça-feira", title: "Cadeira Extensora (Segura 1s no topo)", sets: "2", reps: "10", time: 60 },
+            { day: "Terça-feira", title: "Elevação Lateral", sets: "4", reps: "12", time: 60 },
+            { day: "Terça-feira", title: "Desenvolvimento na Máquina", sets: "4", reps: "12", time: 60 },
+
+            // Quarta-feira (Costas / Bíceps)
+            { day: "Quarta-feira", title: "Puxada à Frente (Polia Alta)", sets: "2", reps: "12", time: 60 },
+            { day: "Quarta-feira", title: "Puxada à Frente (Polia Alta)", sets: "2", reps: "10", time: 60 },
+            { day: "Quarta-feira", title: "Remada Baixa (Triângulo) ou Curvada", sets: "2", reps: "12", time: 60 },
+            { day: "Quarta-feira", title: "Remada Baixa (Triângulo) ou Curvada", sets: "2", reps: "10", time: 60 },
+            { day: "Quarta-feira", title: "Rosca Direta (Barra ou Halteres)", sets: "2", reps: "12", time: 45 },
+            { day: "Quarta-feira", title: "Rosca Direta (Barra ou Halteres)", sets: "2", reps: "10", time: 60 },
+            { day: "Quarta-feira", title: "Rosca Concentrada (Halteres)", sets: "2", reps: "12", time: 45 },
+            { day: "Quarta-feira", title: "Rosca Concentrada (Halteres)", sets: "2", reps: "10", time: 60 },
+            { day: "Quarta-feira", title: "Rosca Invertida", sets: "3", reps: "12", time: 45 },
+
+            // Quinta-feira (Posterior / Glúteo / Abdomen)
+            { day: "Quinta-feira", title: "Mesa ou Cadeira Flexora", sets: "2", reps: "15", time: 60 },
+            { day: "Quinta-feira", title: "Mesa ou Cadeira Flexora", sets: "2", reps: "10", time: 60 },
+            { day: "Quinta-feira", title: "Levantamento Terra Romeno (Stiff)", sets: "4", reps: "10", time: 60 },
+            { day: "Quinta-feira", title: "Cadeira Abdutora", sets: "4", reps: "15", time: 60 },
+            { day: "Quinta-feira", title: "Abdominal Militar", sets: "4", reps: "15", time: 45 },
+
+            // Sexta-feira (Peito + Bíceps / Tríceps)
+            { day: "Sexta-feira", title: "BI-SÉRIE: Supino Máquina + Rosca Direta", sets: "4", reps: "10+10", time: 60 },
+            { day: "Sexta-feira", title: "BI-SÉRIE: Crucifixo Máquina + Tríceps", sets: "4", reps: "12+12", time: 60 },
+            { day: "Sexta-feira", title: "Supino Inclinado (Halteres)", sets: "3", reps: "12", time: 45 },
+            { day: "Sexta-feira", title: "Tríceps Coice no Cabo", sets: "4", reps: "12", time: 45 },
+            { day: "Sexta-feira", title: "Rosca Concentrada (Halteres)", sets: "3", reps: "12", time: 45 }
+        ];
+
+        /* =========================================
+           ESTADOS DA APLICAÇÃO
+           ========================================= */
+        let timerInterval = null;
+        let timeLeft = 0; 
+        let defaultTime = 60; // Tempo inicial padrão (pode mudar dependendo do exercício)
+
+        /* =========================================
+           LÓGICA DO TEMPORIZADOR
+           ========================================= */
+        const display = document.getElementById('timeDisplay');
+        const btnStart = document.getElementById('btnStart');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function setTimerForExercise(seconds) {
+            pauseTimer();
+            defaultTime = seconds;
+            timeLeft = seconds;
+            updateDisplay();
+        }
+
+        function startTimer() {
+            if (timerInterval) return; // Já está rodando
+            if (timeLeft <= 0) timeLeft = defaultTime; // Previne iniciar zerado
+
+            btnStart.textContent = "Rodando...";
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+
+                if (timeLeft <= 0) {
+                    pauseTimer();
+                    alert("Tempo de descanso finalizado! Bora para a próxima série!");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            btnStart.textContent = "Iniciar";
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = defaultTime;
+            updateDisplay();
+        }
+
+        /* =========================================
+           LÓGICA DA LISTA DE TAREFAS
+           ========================================= */
+        function toggleTask(checkbox, listItemId) {
+            const listItem = document.getElementById(listItemId);
+            if (checkbox.checked) {
+                listItem.classList.add('completed');
+            } else {
+                listItem.classList.remove('completed');
+            }
+        }
+
+        function loadExercises() {
+            const selectedDay = document.getElementById('daySelector').value;
+            const list = document.getElementById('todoList');
+            list.innerHTML = ''; // Limpa a lista atual
+
+            // Filtra exercícios do dia e os adiciona no HTML
+            const todaysExercises = exercisesData.filter(ex => ex.day === selectedDay);
+            
+            todaysExercises.forEach((ex, index) => {
+                const itemId = `task-${index}`;
+                
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.id = itemId;
+
+                li.innerHTML = `
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" onchange="toggleTask(this, '${itemId}')">
+                    </div>
+                    <div class="task-content">
+                        <span class="task-text">${ex.title}</span>
+                        <span class="task-details">${ex.sets} séries de ${ex.reps} repetições</span>
+                    </div>
+                    <button class="btn-set-timer" onclick="setTimerForExercise(${ex.time})" title="Usar tempo de descanso deste exercício">
+                        ⏱️ ${ex.time}s
+                    </button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        /* =========================================
+           MODO CLARO / ESCURO
+           ========================================= */
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        /* =========================================
+           INICIALIZAÇÃO
+           ========================================= */
+        
+        // Define o dia de hoje por padrão (se for final de semana, vai para segunda)
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        const todayStr = daysOfWeek[new Date().getDay()];
+        
+        const daySelector = document.getElementById('daySelector');
+        // Se for fim de semana ou o dia não estiver na lista, deixa o default como Segunda-feira
+        if(Array.from(daySelector.options).some(opt => opt.value === todayStr)) {
+            daySelector.value = todayStr;
+        }
+
+        loadExercises(); // Carrega os exercícios do dia selecionado
+        updateDisplay(); // Zera o display inicialmente
+    </script>
+</body>
+</html>
